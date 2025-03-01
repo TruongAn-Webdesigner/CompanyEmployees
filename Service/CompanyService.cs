@@ -70,6 +70,7 @@ namespace Service
             return companyToReturn;
         }
 
+        // lấy nhiều company theo (guid id, guid id,...)
         public IEnumerable<CompanyDto> GetByIds(IEnumerable<Guid> ids, bool trackChanges)
         {
             if (ids is null)

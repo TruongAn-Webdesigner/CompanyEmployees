@@ -57,6 +57,7 @@ namespace CompanyEmployees.Presentation.Controllers
         // phương thức này không thể lấy giá trị từ uri để tạo mới dữ liệu ví dụ: https:.../api/company/create?id=...
         // dữ liệu lấy từ giá trị nhập vào từ phần nội dung (mục Body -> raw) postman, nên cần phải có [FromBody] để nó nhận chính xác dự liệu từ Body
         // có thể xử lý theo uri = [FromUri],nhưng vì bảo mật nên không nên dùng cái này
+        // phần này vừa có thể tạo company + add mới nhân viên do có khai báo IE<em dto> trong CompanyForUpdateDto
         [HttpPost]
         public IActionResult CreateCompany([FromBody] CompanyForCreationDto company)
         {
@@ -64,6 +65,9 @@ namespace CompanyEmployees.Presentation.Controllers
             // có thể khi chuyển đổi deserialization sẽ thất bại và null nên cần phải kiểm tra
             if (company is null)
                 return BadRequest("CompanyForCreationDto object is null");
+
+            if (!ModelState.IsValid)
+                return UnprocessableEntity(ModelState);
 
             var createdCompany = _service.CompanyService.CreateCompany(company);
 
@@ -75,7 +79,7 @@ namespace CompanyEmployees.Presentation.Controllers
 
         [HttpGet("collection/({ids})", Name = "CompanyCollection")]
         // chuyển sang dùng ModelBinder để nó tự động gán IE<string>(chuỗi guid) sang IE<guid>
-        // hàm ModelBinder trongsẽ xử lý trước khi chạy vào 
+        // hàm ModelBinder sẽ xử lý trước khi chạy vào trong
         public IActionResult GetCompanyCollection(/*IEnumerable<Guid> ids*/ [ModelBinder(BinderType = typeof(ArrayModelBinder))]IEnumerable<Guid> ids)
         {
             var companies = _service.CompanyService.GetByIds(ids, trackChanges: false);
