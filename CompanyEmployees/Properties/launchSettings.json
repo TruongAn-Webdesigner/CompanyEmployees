@@ -1,0 +1,53 @@
+﻿{
+  "$schema": "http://json.schemastore.org/launchsettings.json",
+  "iisSettings": {
+    "windowsAuthentication": false,
+    "anonymousAuthentication": true,
+    "iisExpress": {
+      "applicationUrl": "http://localhost:48846", // cổng này là cổng dự phòng nếu profiles không định nghĩa applicationUrl thì chỗ này sẽ gọi dùng
+      "sslPort": 44307 // là nơi chỉ định cổng số SSL các profiles (applicationUrl) dùng riêng cho giao thức HTTPS
+    }
+  },
+
+  // đây là nơi định nghĩa các hồ sơ (profile) được dùng ví dụ tạo thêm KestrelProfile,... (nơi khởi chạy trình duyệt)
+  "profiles": {
+    "CompanyEmployees": { // khi chạy profile này, app sẽ chạy dựa trên 1 phần cấu hình của iisExpress và ghi đè nó
+      "commandName": "Project",
+      "dotnetRunMessages": true,
+      "launchBrowser": false, //đổi thành false ngăn trình web khởi động chạy, vì khi chạy api thì cần web làm gì
+      "launchUrl": "weatherforecast",
+      "applicationUrl": "https://localhost:7188;http://localhost:5000", // cái naỳ là cổng để thằng iisExpress nó trỏ đến, cái nào đứng đầu sẽ chạy cổng đó
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      }
+    },
+    "http": {
+      "commandName": "Project",
+      "dotnetRunMessages": true,
+      "launchBrowser": true,
+      "launchUrl": "weatherforecast",
+      "applicationUrl": "http://localhost:5283",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      }
+    },
+    "https": {
+      "commandName": "Project",
+      "dotnetRunMessages": true,
+      "launchBrowser": true,
+      "launchUrl": "weatherforecast",
+      "applicationUrl": "https://localhost:7188;http://localhost:5283",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      }
+    },
+    "IIS Express": {
+      "commandName": "IISExpress",
+      "launchBrowser": true,
+      "launchUrl": "weatherforecast",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      }
+    }
+  }
+}
