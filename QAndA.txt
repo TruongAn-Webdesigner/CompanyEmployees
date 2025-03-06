@@ -1,0 +1,59 @@
+1. 
+
+Profiles dùng để làm gì?
+- là nơi định nghĩa cách thức mà một môi trường sẽ được chạy
+
+Trong applicationUrl có 2 cổng http và https mặc định nó sẽ chạy cái nào?
+- mặc định nó sẽ chạy cái đầu tiên
+
+iisExpress trong iisSettings dùng để làm gì?
+- để cấu hình cho IIS Express khi muốn khởi chạy profile IIS Express
+
+Cấu hình CORS để làm gì?
+- CORS (cross-origin resource sharing) chia sẻ tài nguyên đa nguồn, là 1 cơ chế cấp hoặc cho phép truy cập hoặc hạn chế từ các nguồn truy cập khác nhau
+
+WebApplication.CreateBuilder có thể làm được gì?
+- Thêm Configuration vào project
+- Đăng ký service
+- Cấu hình nhật ký logging
+- Cấu hình IHostBuilder và IWebHostBuilder: 2 cấu hình này chính là nền tảng thiết lập khởi động và cấu hình ứng dụng
+
+2.
+IoC là gì?
+- IoC là nơi quản lý các dependencies, chịu trách nhiệm cung cấp các dependencies khi cần.
+
+DI là gì?
+- DI chịu trách nhiệm thực thi inject khi IoC đưa dependencies, nghĩa là thay thì cứ new object nhiều class thì chỉ cần tạo ra 1 lần rồi inject nó vào các class đó
+
+services.AddSingleton hoạt động như thế nào?
+- Mỗi lần tạo 1 service lần request đầu và lần request sau sẽ gọi cùng 1 instance(thể hiện) service, duy trì đến hết vòng đời của service collection
+
+services.AddTransient hoạt động như thế nào?
+- Bất kỳ khi nào gọi đến service thì nó đều tạo ra object mới
+
+services.AddScoped hoạt động như thế nào?
+- Tạo ra 1 phạm vi theo 1 request và kết thúc vòng đời khi request đó xử lý xong, ví dụ request 1 tạo ra instance service thì các controller, repositories sử dụng method thì sẽ dùng chung 1 instance service (đây gọi là phạm vi), nếu có request 2 thì nó sẽ tạo 1 instance riêng
+
+3.
+Onion là gì?
+- là kiến trúc phân lớp, dùng dependency inversion (đảo ngược phụ thuộc) để làm mọi thứ phụ thuộc hoàn toàn vào abstractions (interface) thay vì các implement
+
+Onion gồm những phần nào?
+- Domain layer: nơi trung tâm chứa các contracts (interface)
+- Service Layer: là lớp chịu trách nhiệm quản lý và điều phối các lớp khác để thực hiện nghiệp vụ
+- Infrastructure Layer: là lớp chứa các triển khai 1 hành động cụ thể nào đó
+- Presentation Layer: có nhiệm vụ gửi và nhận các request Service Layer
+
+Lợi ích của Onion là gì?
+- Giúp giảm sự phụ thuộc của lớp triển khai, giảm tác động khi có thay đổi, dễ quản lý code.
+
+Cách hoạt động Onion?
+- Các lớp ngoài (Presentation) giờ đây sẽ phụ thuộc các lớp bên trong (interface) thông qua 1 service sau đó service chịu trách nhiệm điều phối các lớp khác để thực hiện nghiệp vụ
+
+Repository pattern dùng để làm gì?
+- Dùng để tạo 1 kết nối chung có thể hỗ trợ CRUD, các phương thức khác có thể kế thừa và triển khai theo lớp reposiroty chung này giúp hạn chế việc lặp code.
+
+
+
+
+
