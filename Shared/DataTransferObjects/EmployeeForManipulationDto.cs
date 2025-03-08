@@ -10,7 +10,7 @@ namespace Shared.DataTransferObjects
     // class này cấu hình validate chung cho các class kế thừa khác
     public abstract record EmployeeForManipulationDto
     {
-        [Required(ErrorMessage = "Company name is a required field.")]
+        [Required(ErrorMessage = "Employee name is a required field.")]
         [MaxLength(30, ErrorMessage = "Maximum length for the Name is 30 characters.")]
         public string? Name { get; init; }
 

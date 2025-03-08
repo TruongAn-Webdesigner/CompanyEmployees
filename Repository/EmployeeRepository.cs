@@ -1,5 +1,8 @@
 ﻿using Contracts;
 using Entities.Models;
+using Microsoft.EntityFrameworkCore;
+using Repository.Extensions;
+using Shared.RequestFeatures;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,13 +19,27 @@ namespace Repository
         {
         }
 
-        public IEnumerable<Employee> GetEmployees(Guid companyId, bool trackChanges) =>
-            FindByCondition(e => e.CompanyId.Equals(companyId), trackChanges)
-            .OrderBy(e => e.Name).ToList();
+        public async Task<PagedList<Employee>> GetEmployees(Guid companyId,
+            EmployeeParameters employeeParameters, bool trackChanges)
+        {
+            //17.3 thêm filter cơ bản -> nanga cao
+            var employees = await FindByCondition(e => e.CompanyId.Equals(companyId), trackChanges)
+            //18.2 filter theo age nâng cao
+            .FilterEmployees(employeeParameters.MinAge, employeeParameters.MaxAge)
+            //18.2 search
+            .Search(employeeParameters.SearchTerm)
+            //19.2 sort
+            .Sort(employeeParameters.OrderBy)
+            .OrderBy(e => e.Name)
+            .ToListAsync(); // đối với dữ liệu dài hàng triệu dòng thì giải pháp này không nhanh bằng thêm await count() 16.4.1 Additional Advice
+            // 16.4 thêm paging
+            return PagedList<Employee>.ToPagedList(employees, employeeParameters.PageNumber, employeeParameters.PageSize);
+        }
+            
 
-        public Employee GetEmployee(Guid companyId, Guid id, bool trackChanges) =>
-            FindByCondition(e => e.CompanyId.Equals(companyId) && e.Id.Equals(id), trackChanges)
-            .SingleOrDefault();
+        public async Task<Employee> GetEmployee(Guid companyId, Guid id, bool trackChanges) =>
+            await FindByCondition(e => e.CompanyId.Equals(companyId) && e.Id.Equals(id), trackChanges)
+            .SingleOrDefaultAsync();
 
         public void CreateEmployeeForComapny(Guid companyId, Employee employee)
         {

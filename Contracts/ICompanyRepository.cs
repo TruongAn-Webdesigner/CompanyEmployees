@@ -9,10 +9,12 @@ namespace Contracts
 {
     public interface ICompanyRepository
     {
-        IEnumerable<Company> GetAllCompanies(bool trackChanges);
-        Company GetCompany(Guid companyId, bool trackChanges);
+        //14.3 chuyeển sang async
+        Task<IEnumerable<Company>> GetAllCompanies(bool trackChanges);
+        Task<Company> GetCompany(Guid companyId, bool trackChanges);
+        // hàm này không đổi async bởi vì nó không làm thay đổi gì trong database, nó chỉ that đổi trạng thái của entity added và deleted
         void CreateCompany(Company company);
-        IEnumerable<Company> GetByIds(IEnumerable<Guid> ids, bool trackChanges);
+        Task<IEnumerable<Company>> GetByIds(IEnumerable<Guid> ids, bool trackChanges);
         void DeleteCompany(Company company);
     }
 }

@@ -28,6 +28,6 @@ CompanyRepository(repositoryContext));
         public IEmployeeRepository Employee => _employeeRepository.Value;
 
         // Sau khi triển khai CRUD thì có thể lưu lại ngay lập tức
-        public void Save() => _repositoryContext.SaveChanges();
+        public async Task SaveAsync() => await _repositoryContext.SaveChangesAsync();
     }
 }

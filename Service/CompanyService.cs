@@ -26,12 +26,12 @@ namespace Service
             _loggerManager = loggerManager;
             _mapper = mapper;
         }
-
-        public IEnumerable<CompanyDto> GetAllCompanies(bool trackChanges)
+         
+        public async Task<IEnumerable<CompanyDto>> GetAllCompanies(bool trackChanges)
         {
             //try => lọa bỏ try catch vì bây giờ đã có ExceptionMiddlewareExtensions xử lý exception rồi
             //{
-                var companies = _repositoryManager.Company.GetAllCompanies(trackChanges);
+                var companies = await _repositoryManager.Company.GetAllCompanies(trackChanges);
 
                 //khi không dùng mapper
                 //var companiesDto = companies.Select(c => new CompanyDto(c.Id, c.Name ?? "", string.Join(' ', c.Address, c.Country))).ToList();
@@ -48,22 +48,24 @@ namespace Service
             //}
         }
         // lấy đơn dữ liệu 
-        public CompanyDto GetCompany(Guid id, bool trackChanges)
+        public async Task<CompanyDto> GetCompany(Guid id, bool trackChanges)
         {
-            var company = _repositoryManager.Company.GetCompany(id, trackChanges);
-            if (company is null)
-                throw new CompanyNotFoundException(id); // gọi đến sealed class CompanyNotFoundException
+            // 15.6 không cần dùng
+            //var company = await _repositoryManager.Company.GetCompany(id, trackChanges);
+            //if (company is null)
+            //    throw new CompanyNotFoundException(id); // gọi đến sealed class CompanyNotFoundException
+            var company = await GetCompanyAndCheckIfItExists(id, trackChanges);
 
             var companyDto = _mapper.Map<CompanyDto>(company);
             return companyDto;
         }
 
-        public CompanyDto CreateCompany(CompanyForCreationDto company)
+        public async Task<CompanyDto> CreateCompany(CompanyForCreationDto company)
         {
             var companyEntity = _mapper.Map<Company>(company);
 
             _repositoryManager.Company.CreateCompany(companyEntity);
-            _repositoryManager.Save();
+            await _repositoryManager.SaveAsync();
 
             var companyToReturn = _mapper.Map<CompanyDto>(companyEntity);
 
@@ -71,12 +73,12 @@ namespace Service
         }
 
         // lấy nhiều company theo (guid id, guid id,...)
-        public IEnumerable<CompanyDto> GetByIds(IEnumerable<Guid> ids, bool trackChanges)
+        public async Task<IEnumerable<CompanyDto>> GetByIds(IEnumerable<Guid> ids, bool trackChanges)
         {
             if (ids is null)
                 throw new IdParametersBadRequestException();
             // do cách phân tách giữa client và service của DTO nên khi gọi thì qua models nhưng trả về thì qua DTO
-            var companyEntites = _repositoryManager.Company.GetByIds(ids, trackChanges);
+            var companyEntites = await _repositoryManager.Company.GetByIds(ids, trackChanges);
             if (ids.Count() != companyEntites.Count())
                 throw new CollectionByIdsBadRequestException();
 
@@ -86,7 +88,7 @@ namespace Service
         }
 
         // Tạo nhiều company trong cùng 1 request
-        public (IEnumerable<CompanyDto> companies, string ids) CreateCompanyCollection(IEnumerable<CompanyForCreationDto> companyCollection)
+        public async Task<(IEnumerable<CompanyDto> companies, string ids)> CreateCompanyCollection(IEnumerable<CompanyForCreationDto> companyCollection)
         {
             if (companyCollection is null)
                 throw new CompanyCollectionBadRequest();
@@ -97,7 +99,7 @@ namespace Service
                 _repositoryManager.Company.CreateCompany(company);
             }
 
-            _repositoryManager.Save();
+            await _repositoryManager.SaveAsync();
 
             var companyCollectionToReturn = _mapper.Map<IEnumerable<CompanyDto>>(companyEntites);
             var ids = string.Join(",", companyCollectionToReturn.Select(c => c.Id));
@@ -105,24 +107,38 @@ namespace Service
             return (companies: companyCollectionToReturn, ids: ids);
         }
 
-        public void DeleteCompany(Guid companyId, bool trackChanges)
+        public async Task DeleteCompany(Guid companyId, bool trackChanges)
         {
-            var company = _repositoryManager.Company.GetCompany(companyId, trackChanges);
-            if (company is null)
-                throw new CompanyNotFoundException(companyId);
+            //var company = await _repositoryManager.Company.GetCompany(companyId, trackChanges);
+            //if (company is null)
+            //    throw new CompanyNotFoundException(companyId);
+
+            var company = await GetCompanyAndCheckIfItExists(companyId, trackChanges);
 
             _repositoryManager.Company.DeleteCompany(company);
-            _repositoryManager.Save();
+            await _repositoryManager.SaveAsync();
         }
 
-        public void UpdateCompany(Guid companyId, CompanyForUpdateDto companyForUpdate, bool trackChanges)
+        public async Task UpdateCompany(Guid companyId, CompanyForUpdateDto companyForUpdate, bool trackChanges)
         {
-            var companyEntity = _repositoryManager.Company.GetCompany(companyId, trackChanges);
-            if (companyEntity is null)
-                throw new CompanyNotFoundException(companyId);
+            //var companyEntity = await _repositoryManager.Company.GetCompany(companyId, trackChanges);
+            //if (companyEntity is null)
+            //    throw new CompanyNotFoundException(companyId);
 
-            _mapper.Map(companyForUpdate, companyEntity);
-            _repositoryManager.Save();
+            var company = await GetCompanyAndCheckIfItExists(companyId, trackChanges);
+
+            _mapper.Map(companyForUpdate, company);
+            await _repositoryManager.SaveAsync();
+        }
+
+        // hàm mở rộng gọi chung hạn chế lặp code
+        private async Task<Company> GetCompanyAndCheckIfItExists(Guid id, bool trackChanges)
+        {
+            var company = await _repositoryManager.Company.GetCompany(id, trackChanges);
+            if (company is null)
+                throw new CompanyNotFoundException(id);
+
+            return company;
         }
     }
 }

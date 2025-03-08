@@ -10,16 +10,17 @@ namespace Service.Contracts
 {
     public interface ICompanyService
     {
+        // 14.5 thêm async
         // ban đầu tham chiếu trực tiếp đến model Company nhưng do DTO nên tách ra giao tiếp thông qua shared, shared sẽ gọi models
-        IEnumerable<CompanyDto> GetAllCompanies(bool trackChanges);
-        CompanyDto GetCompany(Guid companyId, bool trackChanges);
-        CompanyDto CreateCompany(CompanyForCreationDto company);
-        IEnumerable<CompanyDto> GetByIds(IEnumerable<Guid> ids, bool trackChanges);
+        Task<IEnumerable<CompanyDto>> GetAllCompanies(bool trackChanges);
+        Task<CompanyDto> GetCompany(Guid companyId, bool trackChanges);
+        Task<CompanyDto> CreateCompany(CompanyForCreationDto company);
+        Task<IEnumerable<CompanyDto>> GetByIds(IEnumerable<Guid> ids, bool trackChanges);
 
         // phương thức này chấp nhận 1 tập hơp loại CompanyForCreationDto làm tham số rồi trả về 1 Tuple gồm 2 trương companies, ids
-        (IEnumerable<CompanyDto> companies, string ids) CreateCompanyCollection(IEnumerable<CompanyForCreationDto> companyCollection);
+        Task<(IEnumerable<CompanyDto> companies, string ids)> CreateCompanyCollection(IEnumerable<CompanyForCreationDto> companyCollection);
 
-        void DeleteCompany(Guid companyId, bool trackChanges);
-        void UpdateCompany(Guid companyId, CompanyForUpdateDto companyForUpdate, bool trackChanges);
+        Task DeleteCompany(Guid companyId, bool trackChanges);
+        Task UpdateCompany(Guid companyId, CompanyForUpdateDto companyForUpdate, bool trackChanges);
     }
 }

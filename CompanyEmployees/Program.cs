@@ -4,6 +4,11 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.Extensions.Options;
 using NLog;
+using CompanyEmployees.Presentation.ActionFilters;
+using Shared.DataTransferObjects;
+using Service;
+using AspNetCoreRateLimit;
+using CompanyEmployees.Utility;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -26,6 +31,43 @@ builder.Services.ConfigureServiceManager();
 builder.Services.ConfigureSqlContext(builder.Configuration);
 builder.Services.AddAutoMapper(typeof(Program));
 
+//30.2 triển khai Swagger
+builder.Services.ConfigureSwagger();
+
+//27.1 triển khai Identity -> đăng ký app.UseAuthentication();
+builder.Services.AddAuthentication();
+builder.Services.ConfigureIdentity();
+//27.6 triển khai jwt -> bắt buộc phải nằm dưới cấu hình AddAuthentication, nếu không sẽ không hoạt động
+builder.Services.ConfigureJWT(builder.Configuration);
+//29.2.1 dùng IOptions
+builder.Services.AddJwtConfiguration(builder.Configuration);
+
+// 26.1 rate limiting -> đăng ký app.UseIpRateLimiting();
+builder.Services.AddMemoryCache();
+builder.Services.ConfigureRateLimitingOptions();
+builder.Services.AddHttpContextAccessor();
+
+//25.6 validate cache -> đăng ký thêm app.UseHttpCacheHeaders();
+builder.Services.ConfigureHttpCacheHeaders();
+
+//25.2 triển khai cache-store -> đăng ký thêm app.UseResponseCaching();
+builder.Services.ConfigureResponseCaching();
+
+//24.1 triển khai cấu hình version api
+builder.Services.ConfigureVersioning();
+
+// 21.4.2 triển khai validate cho media type custom
+builder.Services.AddScoped<ValidateMediaTypeAttribute>();
+
+builder.Services.AddScoped<AsyncActionFilterExample>();//15.2 khai báo action filter cho IoC
+builder.Services.AddScoped<ValidationFilterAttribute>();
+//20.3 triển khai shape
+builder.Services.AddScoped<IDataShaper<EmployeeDto>, DataShaper<EmployeeDto>>();
+
+//21.5 triển khai HATEOAS
+builder.Services.AddScoped<IEmployeeLinks, EmployeeLinks>();
+
+
 builder.Services.Configure<ApiBehaviorOptions>(options =>
 {
     // nếu dùng thuộc tính này thì nó ghi đè lên validate mặc định được triển khai theo [ApiController]
@@ -36,16 +78,26 @@ builder.Services.Configure<ApiBehaviorOptions>(options =>
 // dòng code này chính là khai báo IoC cho controller, không có nó thì api không hoạt động
 builder.Services.AddControllers(config =>
 {
+    //15.2 nếu muốn dùng filter ở cấp global
+    //config.Filters.Add(new GlobalFilterExample());
+
     // chuyển kiểu trả về dữ liệu từ json -> xml
     config.RespectBrowserAcceptHeader = true;
     // giúp trả về 406 nếu loại phương tiện (media) máy chủ không hỗ trợ
     config.ReturnHttpNotAcceptable = true;
     // chèn 1 input vào đầu danh sách header Content-Type: application/json-patch+json
     config.InputFormatters.Insert(0, GetJsonPatchInputFormatter());
-}).AddXmlDataContractSerializerFormatters()
+    //25.3 triển khai cache-store loại cache profiles
+    // cái này áp dụng cache tất cả trong controller áp dung cache trừ router nào đang dùng ResponseCache
+    config.CacheProfiles.Add("120SecondsDuration", new CacheProfile { Duration = 120 }); 
+})
+    .AddXmlDataContractSerializerFormatters()
     .AddCustomCSVFormatter() //thêm định dạng trả về custom csv
     // khai báo vị trí controller custom mới
     .AddApplicationPart(typeof(CompanyEmployees.Presentation.AssemblyReference).Assembly);
+
+//21.4.1 triển khai tùy chon media types -> service này khai báo dưới AddControllers
+builder.Services.AddCustomMediaTypes();
 
 // tạo biến ứng dụng loại WebApplication
 // nó rất quan trọng vì WebApplication sẽ giúp build (xây dựng và chạy) các middleware bên dưới hoạt động bằng IApplicationBuilder
@@ -84,13 +136,25 @@ app.UseForwardedHeaders(new ForwardedHeadersOptions
     ForwardedHeaders = Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.All
 });
 
+app.UseIpRateLimiting();
 app.UseCors("CorsPolicy");
+app.UseResponseCaching(); //để xem được UseResponseCaching thì phải send ngay trong 60s đó sẽ có Age header
+app.UseHttpCacheHeaders();
 
+app.UseAuthentication();
 // thực hiện xác thực ủy quyền truy cập ( dữạ trên  ví dụ: cookies, headers) trong request.
 // nó sẽ kiểm tra end point xem mình có đủ quyền truy cập page hay không
 // nó sẽ chỉ xác thực xem có mình có đủ quyền chứ không có làm gì khác nữa
 // nếu xác thực false thì -> 403
 app.UseAuthorization();
+
+//30.2 triển khai swapper
+app.UseSwagger();
+app.UseSwaggerUI(s =>
+{
+    s.SwaggerEndpoint("/swagger/v1/swagger.json", "Code Maze API v1");
+    s.SwaggerEndpoint("/swagger/v2/swagger.json", "Code Maze API v2");
+});
 
 // nếu 1 request truy cập tồn tại chuỗi liệt kê thì trả về response đó, mục đích mở rộng hàm Run()
 app.MapWhen(context => context.Request.Query.ContainsKey("testquerystring"), builder =>
