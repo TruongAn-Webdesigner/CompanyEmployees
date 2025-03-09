@@ -1,4 +1,5 @@
 ﻿using Entities.Models;
+using Entities.Responses;
 using Shared.DataTransferObjects;
 using System;
 using System.Collections.Generic;
@@ -12,8 +13,8 @@ namespace Service.Contracts
     {
         // 14.5 thêm async
         // ban đầu tham chiếu trực tiếp đến model Company nhưng do DTO nên tách ra giao tiếp thông qua shared, shared sẽ gọi models
-        Task<IEnumerable<CompanyDto>> GetAllCompanies(bool trackChanges);
-        Task<CompanyDto> GetCompany(Guid companyId, bool trackChanges);
+        Task<ApiBaseResponse> GetAllCompanies(bool trackChanges);
+        Task<ApiBaseResponse> GetCompany(Guid companyId, bool trackChanges);
         Task<CompanyDto> CreateCompany(CompanyForCreationDto company);
         Task<IEnumerable<CompanyDto>> GetByIds(IEnumerable<Guid> ids, bool trackChanges);
 

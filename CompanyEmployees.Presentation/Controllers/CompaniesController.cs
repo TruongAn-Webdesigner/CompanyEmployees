@@ -1,6 +1,9 @@
 ﻿using CompanyEmployees.Presentation.ActionFilters;
+using CompanyEmployees.Presentation.Controllers.Extensions;
 using CompanyEmployees.Presentation.ModelBinders;
+using Entities.Responses;
 using Marvin.Cache.Headers;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Service.Contracts;
@@ -29,7 +32,9 @@ namespace CompanyEmployees.Presentation.Controllers
 
     //25.3 triển khai cache-store loại cache profiles
     //[ResponseCache(CacheProfileName = "120SecondsDuration")]
-    public class CompaniesController : ControllerBase
+
+    // 32.3 ControllerBase -> ApiControllerBase sẽ đảm nhiệm vai trò hiển thị lỗi và có kế thừa từ ControllerBase
+    public class CompaniesController : ApiControllerBase
     {
         private readonly IServiceManager _service;
 
@@ -43,7 +48,7 @@ namespace CompanyEmployees.Presentation.Controllers
         /// Gets the list of all companies
         /// </summary>
         /// <returns>The companies list</returns>
-        [ServiceFilter(typeof(AsyncActionFilterExample))] 
+        [ServiceFilter(typeof(AsyncActionFilterExample))]
         [HttpGet(Name = "GetCompanies")]
         // 27.7 triển khai protect end point
         //[Authorize] // chỉ định hành động hoặc controller áp dụng yêu cầu authorization
@@ -53,9 +58,12 @@ namespace CompanyEmployees.Presentation.Controllers
             //throw new Exception("Exception");
             //try => lọa bỏ try catch vì bây giờ đã có ExceptionMiddlewareExtensions xử lý exception rồi
             //{
-                var companies = await _service.CompanyService.GetAllCompanies(trackChanges: false);
+            // 33.4 không áp dụng vào phần tách query vào đây mà chuyển qua V2controller
+            var baseResult = await _service.CompanyService.GetAllCompanies(trackChanges: false);
+            // chuyển sang loại ApiOkResponse
+            var companies = baseResult.GetResult<IEnumerable<CompanyDto>>();
 
-                return Ok(companies);
+            return Ok(companies);
             //}
             //catch
             //{
@@ -74,7 +82,13 @@ namespace CompanyEmployees.Presentation.Controllers
         [HttpCacheValidation(MustRevalidate = false)]
         public async Task<IActionResult> GetCompany(Guid id)
         {
-            var company = await _service.CompanyService.GetCompany(id, trackChanges: false);
+            var baseResult = await _service.CompanyService.GetCompany(id, trackChanges: false);
+
+            if (!baseResult.Success)
+                return ProcessError(baseResult);
+            // chuyển sang loại ApiOkResponse
+            var company = baseResult.GetResult<CompanyDto>();
+
             return Ok(company);
         }
 
@@ -115,7 +129,7 @@ namespace CompanyEmployees.Presentation.Controllers
             // CompanyById dựa vào name route get
             // CreatedAtRoute trả về 201
             // Post này không an toàn và không bình thường vì cứ send là 1 cột tạo mới nếu không có validate hoặc validate không kỹ
-            return CreatedAtRoute("CompanyById", new { id = createdCompany.Id }, createdCompany); 
+            return CreatedAtRoute("CompanyById", new { id = createdCompany.Id }, createdCompany);
         }
 
         // chuyển sang dùng ModelBinder để nó tự động gán IE<string>(chuỗi guid) sang IE<guid>
@@ -148,7 +162,7 @@ namespace CompanyEmployees.Presentation.Controllers
         // phần này vừa có thể update company + add mới nhân viên do có khai báo IE<em dto> trong CompanyForUpdateDto
         [HttpPut("{id:guid}")]
         [ServiceFilter(typeof(ValidationFilterAttribute))]
-        public async Task<IActionResult> UpdateCompany(Guid id,[FromBody] CompanyForUpdateDto company)
+        public async Task<IActionResult> UpdateCompany(Guid id, [FromBody] CompanyForUpdateDto company)
         {
             // do dùng action filter nên không cần validate chỗ này
             //if (company is null)
@@ -168,6 +182,6 @@ namespace CompanyEmployees.Presentation.Controllers
             return Ok();
         }
 
-        
+
     }
 }

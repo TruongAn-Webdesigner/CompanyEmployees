@@ -9,6 +9,11 @@ using Shared.DataTransferObjects;
 using Service;
 using AspNetCoreRateLimit;
 using CompanyEmployees.Utility;
+using MediatR;
+using static System.Net.Mime.MediaTypeNames;
+using System.Reflection;
+using FluentValidation;
+using Application.Behaviors;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -30,6 +35,17 @@ builder.Services.ConfigureRepositoryManager();
 builder.Services.ConfigureServiceManager();
 builder.Services.ConfigureSqlContext(builder.Configuration);
 builder.Services.AddAutoMapper(typeof(Program));
+
+// 33.7.2 triển khai fluent validate
+builder.Services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
+
+//33.3 dùng MediatR
+// phương thức này sẽ quét tập hợp các trình xử lý nghiệp vụ
+// version mới mediatr khai báo khác
+builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblies(typeof(Application.AssemblyReference).Assembly));
+
+//33.7.1 dùng fluent validation
+builder.Services.AddValidatorsFromAssembly(typeof(Application.AssemblyReference).Assembly);
 
 //30.2 triển khai Swagger
 builder.Services.ConfigureSwagger();
@@ -157,12 +173,12 @@ app.UseSwaggerUI(s =>
 });
 
 // nếu 1 request truy cập tồn tại chuỗi liệt kê thì trả về response đó, mục đích mở rộng hàm Run()
-app.MapWhen(context => context.Request.Query.ContainsKey("testquerystring"), builder =>
-{
-    builder.Run(async context =>
-        await context.Response.WriteAsync("Hello from MapWhen branch")
-    );
-});
+//app.MapWhen(context => context.Request.Query.ContainsKey("testquerystring"), builder =>
+//{
+//    builder.Run(async context =>
+//        await context.Response.WriteAsync("Hello from MapWhen branch")
+//    );
+//});
 
 // hàm use này giúp tạo ra nhiều request delegate hơn thay vì là 1
 // thứ tự chạy: log 1 -> next qua Run() -> log 1 của Run() -> trả Response -> trả về tiếp tuc thực thi Use() chạy tiếp log 2 và kết thúc

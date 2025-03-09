@@ -2,6 +2,7 @@
 using Contracts;
 using Entities.Exceptions;
 using Entities.Models;
+using Entities.Responses;
 using Service.Contracts;
 using Shared.DataTransferObjects;
 using System;
@@ -26,8 +27,8 @@ namespace Service
             _loggerManager = loggerManager;
             _mapper = mapper;
         }
-         
-        public async Task<IEnumerable<CompanyDto>> GetAllCompanies(bool trackChanges)
+        // 32.2 IEnumerable<CompanyDto> -> ApiBaseResponse
+        public async Task<ApiBaseResponse> GetAllCompanies(bool trackChanges)
         {
             //try => lọa bỏ try catch vì bây giờ đã có ExceptionMiddlewareExtensions xử lý exception rồi
             //{
@@ -39,7 +40,7 @@ namespace Service
                 // sau khi dùng mapper
                 var companiesDto = _mapper.Map<IEnumerable<CompanyDto>>(companies);
 
-                return companiesDto;
+                return new ApiOkResponse<IEnumerable<CompanyDto>>(companiesDto);
             //}
             //catch (Exception ex)
             //{
@@ -48,7 +49,7 @@ namespace Service
             //}
         }
         // lấy đơn dữ liệu 
-        public async Task<CompanyDto> GetCompany(Guid id, bool trackChanges)
+        public async Task<ApiBaseResponse> GetCompany(Guid id, bool trackChanges)
         {
             // 15.6 không cần dùng
             //var company = await _repositoryManager.Company.GetCompany(id, trackChanges);
@@ -57,7 +58,7 @@ namespace Service
             var company = await GetCompanyAndCheckIfItExists(id, trackChanges);
 
             var companyDto = _mapper.Map<CompanyDto>(company);
-            return companyDto;
+            return new ApiOkResponse<CompanyDto>(companyDto);
         }
 
         public async Task<CompanyDto> CreateCompany(CompanyForCreationDto company)
