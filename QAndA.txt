@@ -53,7 +53,95 @@ Cách hoạt động Onion?
 Repository pattern dùng để làm gì?
 - Dùng để tạo 1 kết nối chung có thể hỗ trợ CRUD, các phương thức khác có thể kế thừa và triển khai theo lớp reposiroty chung này giúp hạn chế việc lặp code.
 
+4.
+Tại sao không dùng controller có sẵn trong main mà phải tách riêng ra class project?
+- vì main project đã ref bao gồm các implement nên tách ra để tuân theo cấu trúc phân lớp, quản lý các DI tốt hơn
 
+Có bao nhiêu cách triển khai router?
+- Convention-based: định tuyến dựa trên quy ước nghĩa là thiết lập giá trị url cứng trong đường dẫn
+- Attribute routing: định tuyến thuộc tính nghĩa là thiết lập dựa trên phương thức GET, POST để chỉ ra 1 action
 
+DTO là gì?
+- Là 1 đối tượng di chuyển data giữa client và server
 
+DTO có thể làm gì?
+- Giúp tuân thủ qui tắc phân lớp, tách biệt data model giúp việc thay đổi model cũng không ảnh hưởng đến các tham số của DTO
 
+Nhược điểm DTO là gì?
+- Tăng số lượng class cần quản lý, giảm hiệu năng không nhiều nhưng việc mapping khi truy suất cũng có ảnh hưởng
+
+5.
+UseExceptionHandler là gì?
+- là middleware có sẵn dùng để xử lý các exception
+
+6.
+Handling Invalid Requests là gì?
+- Nơi xử lý các giá trị null trong service layer, không cần đến controller xử lý
+Mục đích việc triển khai validate tại service layer thay vì controller là gì?
+- Để đảm bảo tính nhất quán của controller, tăng khả năng tái xử dụng validate trong service
+
+7.
+Định dạng kiểu trả về ASP .Net là gì?
+- Kiểu json
+
+Có bao nhiêu phương pháp chính để custom formatter? 
+  - Tạo 1 lớp ouput kế thừa TextOutputFormatter
+  - Tạo 1 lớp input kế thừa TextInputFormatter
+  - Thêm cả input và output vào InputFormatters và OutputFormatters collections
+
+ReturnHttpNotAcceptable trả về status code nào?
+- Mã 406
+
+Mã 406 có ý nghĩa gì?
+- Dành cho phương tiện (media) máy chủ không hỗ trợ
+
+Để custom formatter hoạt động thì nên khai báo ở vị trí nào?
+- khai báo tại AddControllers
+
+8.
+Phương thức an toàn là như thế nào?
+- Là phương thức không thay đổi tài nguyên sau khi phương thức được thực hiện
+
+Các loại phương thức nào được xem là an toàn? 
+- GET, OPTIONS, and HEAD: an toàn không thay đổi gì dù gọi nhiều lần
+
+Delete và PUT có an toàn không?
+- Không an toàn do nó xóa và sửa tài nguyên lần 1, nhưng nếu nó xóa nhiều lần cùng tài nguyên kết quả giống như chỉ gửi request delete 1 lần
+
+PATCH dùng để làm gì?
+- Để cập nhật 1 giá trị nào đó thay vì tất cả như PUT
+
+OPTIONS dùng để làm gì?
+- Để mô tả những tùy chọn phương thức được sử dụng tại server, hoặc các thông tin server
+
+9.
+[FromBody] hoạt động như thế nào?
+- Nó lấy dữ liệu nhập vào từ body sau đó lưu dưới dạng tham số
+
+Tại sao không nên dùng [FromUri] cho POST?
+- Vì nó lấy từ uri có thể gây ảnh hưởng đến bảo mật
+
+Trong quá trình vận chuyển dữ liệu từ postman vào server thì dữ liệu được đóng gói ở đâu? 
+- Khi dữ liệu nhập vào gửi qua request thì nó được đóng gói trong requestbody và server cố gắng chuyển đổi (deserialization) dữ liệu đó sang đối tượng
+
+CreatedAtRoute trả về status code nào?
+- Mã 201 viết tắt của create
+
+Nếu không dùng validate thì việc phản hồi nội dung lỗi trong route sẽ như thế nào?
+- ApiController sẽ tự động giải quyết validate theo mặc định, nội dung lỗi sẽ được lấy từ phía Model nếu có
+
+11.
+PUT khác như thế nào so với PATCH?
+- Put sẽ update tất cả các cột dù chỉ update duy nhất 1 giá trị, nếu các cột khác không đặt các giá trị vào thì nó update thành giá trị mặc định
+
+Connect update là gì?
+- Là 1 dạng kết nối chỉnh sửa trên cùng 1 đối tượng context
+
+Disconnect update là gì?
+- Là 1 dạng kết nối chỉnh sửa trên 2 đối tượng context khác nhau hoặc xử lý trên các dữ liệu offline
+
+Disconnect update được dùng trong trường hơp nào?
+- Trong trường hợp ngắt kết nối với server việc chỉnh sửa có thể tiếp tục phía client đến khi kết nối lại nó sẽ tự đồng bộ hóa.
+
+Khi PUT update với giá trị là int mà để null thì sao? 
+- Mặc định int sẽ là 0
