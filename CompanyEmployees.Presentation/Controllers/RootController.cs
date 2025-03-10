@@ -17,7 +17,6 @@ namespace CompanyEmployees.Presentation.Controllers
         //23.1 triển khai uri root
         // field này chứa liên kết hướng tới hành động api
         // hành động này chỉ thực thi request duy nhất /api
-        // chưa biết gì, chưa triển khai được
         private readonly LinkGenerator _linkGenerator;
 
         public RootController (LinkGenerator linkGenerator)

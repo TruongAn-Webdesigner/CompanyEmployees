@@ -60,7 +60,6 @@ namespace CompanyEmployees.Extensions
             builder.AddMvcOptions(config => config.OutputFormatters.Add(new CsvOutputFormatter()));
 
         // 21.4.1 đăng ký tùy chọn media types
-        // chưa biết gì
         public static void AddCustomMediaTypes(this IServiceCollection services)
         {
             services.Configure<MvcOptions>(config =>
