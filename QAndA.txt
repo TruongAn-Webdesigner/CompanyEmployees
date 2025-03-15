@@ -18,6 +18,15 @@ WebApplication.CreateBuilder có thể làm được gì?
 - Cấu hình nhật ký logging
 - Cấu hình IHostBuilder và IWebHostBuilder: 2 cấu hình này chính là nền tảng thiết lập khởi động và cấu hình ứng dụng
 
+Câu 1: Khi chạy môi trường thực tế ( trên máy chủ), có thể cấu hình port bằng file launchSetting.json không?
+- File launchSetting.json chỉ được dùng để setup chạy dưới local, còn để chạy môi trường thực tế cần phải cấu hình thêm cho IIS Config
+
+Câu 2: Model bindind kế thừa Idisposable và implement dispose() thì khi hết request có tự động dispose không?
+- Hầu hết các class khi kế thừa Idisposable và implement dispose() thì đều được tự động dispose tùy theo phạm vi đăng ký service, nếu Model bindind được dùng với service là singleton thì nó sẽ không tự dispose()
+ 
+Câu 3: có thể inject một transient service vô một singleton service bằng constructor không và scope của transient là gì
+- Có thể inject 1 transient service vô một singleton service và scope của transient service lúc này phụ thuộc vào singleton service nên lifetime của nó vẫn là singleton service
+
 2.
 IoC là gì?
 - IoC là nơi quản lý các dependencies, chịu trách nhiệm cung cấp các dependencies khi cần.
